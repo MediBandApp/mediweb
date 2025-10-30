@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mediband Website</title>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15.7.2/prop-types.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/recharts@2.5.0/umd/Recharts.min.js"></script>
+    <script src="https://unpkg.com/@material-ui/core@4.12.4/umd/material-ui.development.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #f0fdf4; }
+        #artifact_react { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        .website-container { width: 100%; background-color: white; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: calc(100vh - 40px); }
+        @media (min-width: 768px) { /* Desktop styles */
+            .website-container { max-width: 1200px; margin: 0 auto; flex-direction: row; }
+            .main-content { flex-grow: 1; display: flex; flex-direction: column; }
+            .desktop-nav { display: flex; flex-direction: column; width: 200px; background-color: #d1fae5; padding: 20px; border-right: 1px solid #a7f3d0; }
+            .desktop-nav .nav-item { padding: 10px 0; text-align: left; color: #065f46; font-weight: bold; border-radius: 0.5rem; margin-bottom: 10px; transition: background-color 0.2s; cursor: pointer; }
+            .desktop-nav .nav-item:hover { background-color: #a7f3d0; }
+            .desktop-nav .nav-item.active { background-color: #10b981; color: white; }
+            .bottom-tabs { display: none; } /* Hide bottom tabs on desktop */
+        }
+        @media (max-width: 767px) { /* Mobile styles */
+            .website-container { max-width: 400px; margin: 0 auto; }
+            .desktop-nav { display: none; } /* Hide desktop nav on mobile */
+        }
+        .gradient-bg { background: linear-gradient(to bottom right, #a7f3d0, #34d399); }
+        .btn-primary { background-color: #10b981; color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: bold; transition: background-color 0.2s; }
+        .btn-primary:hover { background-color: #059669; }
+        .btn-secondary { background-color: #d1fae5; color: #065f46; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: bold; transition: background-color 0.2s; }
+        .btn-secondary:hover { background-color: #a7f3d0; }
+        .input-field { border: 1px solid #a7f3d0; padding: 0.75rem; border-radius: 0.5rem; width: 100%; box-sizing: border-box; }
+        .input-field:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+        .tab-item { flex: 1; text-align: center; padding: 0.75rem 0; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-item.active { color: #10b981; border-color: #10b981; font-weight: bold; }
+        .tab-item:hover { color: #059669; }
+        .back-button { position: absolute; top: 1rem; left: 1rem; background: none; border: none; font-size: 1.5rem; color: #065f46; cursor: pointer; z-index: 10; }
+        #error-container {
+            color: orange;
+            font-size: 16px;
+            margin: 12px;
+            min-height: 120px;
+            overflow-y: auto;
+            border: 1px solid orange;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #ff96000d;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="artifact_react"></div>
+    <div id="error-container"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
+        const { Button, TextField, Checkbox, FormControlLabel, Radio, RadioGroup, FormLabel } = MaterialUI;
+
+        const App = () => {
+            const [screen, setScreen] = useState('welcome'); // welcome, assignPersonalInfo, shop, dashboard, info, profile, emergency, medicalFile, paymentConfirmation
+            const [personalInfo, setPersonalInfo] = useState({
+                cardId: '',
+                fullName: '',
+                email: '',
+                phone: '',
+                address: '',
+                city: '',
+                zip: '',
+                country: '',
+            });
+            const [selectedBracelet, setSelectedBracelet] = useState(null);
+            const [securityToggle, setSecurityToggle] = useState(false);
+
+            const navigateTo = (targetScreen) => {
+                setScreen(targetScreen);
+            };
+
+            const handlePersonalInfoChange = (e) => {
+                const { name, value } = e.target;
+                setPersonalInfo(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handlePersonalInfoSubmit = () => {
+                console.log('Personal Info Submitted:', personalInfo);
+                navigateTo('shop');
+            };
+
+            const handleBuyNow = (bracelet) => {
+                setSelectedBracelet(bracelet);
+                navigateTo('paymentConfirmation');
+            };
+
+            const handlePaymentConfirm = () => {
+                alert(`Payment confirmed for ${selectedBracelet.name}! Your Mediband code is MB-${Math.floor(Math.random() * 10000)}`);
+                navigateTo('dashboard');
+            };
+
+            const WelcomeScreen = () => (
+                <div className="relative flex flex-col items-center justify-center h-full p-8 text-center gradient-bg">
+                    <img src="https://i.imgur.com/DgTu0JB.png" alt="Mediband Logo" className="w-24 h-24 rounded-full mx-auto mb-6" />
+                    <h1 className="text-4xl font-bold text-white mb-4">Mediband</h1>
+                    <p className="text-white text-lg mb-8">Your Health, Our Priority</p>
+                    <button onClick={() => navigateTo('assignPersonalInfo')} className="btn-primary w-full mb-4">Sign Up or Get Yours</button>
+                    <button onClick={() => navigateTo('login')} className="btn-secondary w-full">Log In</button>
+                </div>
+            );
+
+            const LoginScreen = () => (
+                <div className="relative flex flex-col items-center justify-center h-full p-8 text-center gradient-bg">
+                    <button onClick={() => navigateTo('welcome')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                    <img src="https://i.imgur.com/lDvW5Q0.png" alt="Login Icon" className="w-24 h-24 rounded-full mx-auto mb-6" />
+                    <h2 className="text-3xl font-bold text-white mb-6">Welcome Back!</h2>
+                    <div className="w-full mb-4">
+                        <input type="email" placeholder="Email" className="input-field mb-4" />
+                        <input type="password" placeholder="Password" className="input-field" />
+                    </div>
+                    <button onClick={() => navigateTo('dashboard')} className="btn-primary w-full mb-4">Log In</button>
+                    <a href="#" className="text-white text-sm">Forgot Password?</a>
+                </div>
+            );
+
+            const AssignPersonalInfoScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-white">
+                    <button onClick={() => navigateTo('welcome')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Personal Information</h2>
+                    <div className="flex-grow overflow-y-auto pr-2">
+                        <TextField label="Card ID" name="cardId" value={personalInfo.cardId} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        <TextField label="Full Name" name="fullName" value={personalInfo.fullName} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        <TextField label="Email" name="email" value={personalInfo.email} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        <TextField label="Phone Number" name="phone" value={personalInfo.phone} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        <TextField label="Address" name="address" value={personalInfo.address} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        <TextField label="City" name="city" value={personalInfo.city} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        <TextField label="Zip Code" name="zip" value={personalInfo.zip} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        <TextField label="Country" name="country" value={personalInfo.country} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                    </div>
+                    <button onClick={handlePersonalInfoSubmit} className="btn-primary w-full mt-6">Continue to Shop</button>
+                </div>
+            );
+
+            const ActivationScreen = () => (
+                <div className="relative flex flex-col items-center justify-center h-full p-8 text-center bg-white">
+                    <button onClick={() => navigateTo('dashboard')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                    <div className="bg-green-100 p-6 rounded-full mb-6">
+                        <img src="https://i.imgur.com/lDvW5Q0.png" alt="Bracelet Icon" className="w-24 h-24" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Activate Your Mediband</h2>
+                    <p className="text-gray-600 mb-6">Enter the code from your Mediband bracelet to connect.</p>
+                    <input type="text" placeholder="Mediband Code" className="input-field mb-6 focus:border-green-500 focus:ring-green-200" />
+                    <button onClick={() => navigateTo('dashboard')} className="btn-primary w-full">Connect Device</button>
+                </div>
+            );
+
+            const DashboardScreen = () => {
+                const data = [
+                    { name: 'Mon', HeartRate: 70, Steps: 5000 },
+                    { name: 'Tue', HeartRate: 75, Steps: 6000 },
+                    { name: 'Wed', HeartRate: 72, Steps: 5500 },
+                    { name: 'Thu', HeartRate: 78, Steps: 7000 },
+                    { name: 'Fri', HeartRate: 80, Steps: 7500 },
+                    { name: 'Sat', HeartRate: 76, Steps: 6800 },
+                    { name: 'Sun', HeartRate: 73, Steps: 5200 },
+                ];
+
+                return (
+                    <div className="relative flex flex-col h-full bg-white">
+                        <div className="p-6 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-b-3xl shadow-md">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex items-center">
+                                    <img src="https://i.imgur.com/DgTu0JB.png" alt="Logo" className="w-10 h-10 rounded-full mr-3" />
+                                    <div>
+                                        <h3 className="text-lg font-semibold">Mediband</h3>
+                                        <p className="text-sm opacity-90">Your Health, Your Control</p>
+                                    </div>
+                                </div>
+                                <button className="text-white text-xl"><i className="fas fa-bell"></i></button>
+                            </div>
+                            <h2 className="text-3xl font-bold mb-2">Hello, User!</h2>
+                            <p className="text-sm opacity-90">Welcome to your health dashboard.</p>
+                        </div>
+
+                        <div className="flex-grow overflow-y-auto p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                <button onClick={() => navigateTo('emergency')} className="flex flex-col items-center justify-center p-4 bg-red-500 text-white rounded-xl shadow-lg transform transition duration-200 hover:scale-105">
+                                    <i className="fas fa-ambulance text-3xl mb-2"></i>
+                                    <span className="text-sm font-semibold">Emergency Access</span>
+                                </button>
+                                <button onClick={() => navigateTo('medicalFile')} className="flex flex-col items-center justify-center p-4 bg-blue-500 text-white rounded-xl shadow-lg transform transition duration-200 hover:scale-105">
+                                    <i className="fas fa-file-medical text-3xl mb-2"></i>
+                                    <span className="text-sm font-semibold">My Medical File</span>
+                                </button>
+                                <div className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between col-span-full md:col-span-1">
+                                    <span className="text-lg font-semibold text-gray-800">Enhanced Security</span>
+                                    <FormControlLabel
+                                        control={<Checkbox checked={securityToggle} onChange={(e) => setSecurityToggle(e.target.checked)} name="security" color="primary" />}
+                                        label=""
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-green-50 p-4 rounded-xl shadow-sm mb-6">
+                                <h4 className="text-lg font-semibold text-green-800 mb-3">Health Summary</h4>
+                                <div className="flex flex-wrap justify-around text-center gap-4">
+                                    <div className="w-1/3 md:w-auto">
+                                        <p className="text-2xl font-bold text-green-600">75</p>
+                                        <p className="text-sm text-gray-500">BPM</p>
+                                    </div>
+                                    <div className="w-1/3 md:w-auto">
+                                        <p className="text-2xl font-bold text-green-600">6,500</p>
+                                        <p className="text-sm text-gray-500">Steps</p>
+                                    </div>
+                                    <div className="w-1/3 md:w-auto">
+                                        <p className="text-2xl font-bold text-green-600">8h</p>
+                                        <p className="text-sm text-gray-500">Sleep</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-xl shadow-sm mb-6">
+                                <h4 className="text-lg font-semibold text-gray-800 mb-3">Activity Trends</h4>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <LineChart data={data}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="name" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Line type="monotone" dataKey="HeartRate" stroke="#8884d8" />
+                                        <Line type="monotone" dataKey="Steps" stroke="#82ca9d" />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const EmergencyAccessScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-red-50 gradient-bg">
+                    <button onClick={() => navigateTo('dashboard')} className="back-button text-red-800"><i className="fas fa-arrow-left"></i></button>
+                    <h2 className="text-3xl font-bold text-red-800 mb-6 text-center">Emergency Access</h2>
+                    <p className="text-red-700 text-center mb-8">In case of emergency, quickly access vital information or alert contacts.</p>
+                    <div className="flex-grow flex flex-col justify-center items-center">
+                        <button className="btn-primary bg-red-600 hover:bg-red-700 w-full mb-4">Call Emergency Contacts</button>
+                        <button className="btn-secondary bg-red-200 text-red-800 hover:bg-red-300 w-full">View Emergency Info</button>
+                    </div>
+                </div>
+            );
+
+            const MyMedicalFileScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-blue-50 gradient-bg">
+                    <button onClick={() => navigateTo('dashboard')} className="back-button text-blue-800"><i className="fas fa-arrow-left"></i></button>
+                    <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">My Medical File</h2>
+                    <p className="text-blue-700 text-center mb-8">Securely store and access your medical records and history.</p>
+                    <div className="flex-grow flex flex-col justify-center items-center">
+                        <button className="btn-primary bg-blue-600 hover:bg-blue-700 w-full mb-4">View Records</button>
+                        <button className="btn-secondary bg-blue-200 text-blue-800 hover:bg-blue-300 w-full">Upload New Document</button>
+                    </div>
+                </div>
+            );
+
+            const ShopScreen = () => {
+                const bracelets = [
+                    { id: 1, name: 'Mediband Basic', price: '$99', description: 'Essential health tracking.', image: 'https://i.imgur.com/lDvW5Q0.png' },
+                    { id: 2, name: 'Mediband Pro', price: '$199', description: 'Advanced monitoring & insights.', image: 'https://i.imgur.com/lDvW5Q0.png' },
+                    { id: 3, name: 'Mediband Elite', price: '$299', description: 'Premium features & support.', image: 'https://i.imgur.com/lDvW5Q0.png' },
+                    { id: 4, name: 'Mediband Sport', price: '$149', description: 'Durable for active lifestyles.', image: 'https://i.imgur.com/lDvW5Q0.png' },
+                ];
+
+                return (
+                    <div className="relative flex flex-col h-full bg-white">
+                        <button onClick={() => navigateTo('assignPersonalInfo')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                        <div className="p-6 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-b-3xl shadow-md text-center">
+                            <h2 className="text-3xl font-bold mb-2">Our Medibands</h2>
+                            <p className="text-sm opacity-90">Find the perfect health companion for you.</p>
+                        </div>
+
+                        <div className="flex-grow overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {bracelets.map(bracelet => (
+                                <div key={bracelet.id} className="bg-green-50 p-4 rounded-xl shadow-sm flex flex-col items-center text-center">
+                                    <img src={bracelet.image} alt={bracelet.name} className="w-24 h-24 mb-4 rounded-full" />
+                                    <h3 className="text-xl font-semibold text-green-800 mb-2">{bracelet.name}</h3>
+                                    <p className="text-gray-600 mb-3">{bracelet.description}</p>
+                                    <p className="text-2xl font-bold text-green-700 mb-4">{bracelet.price}</p>
+                                    <button onClick={() => handleBuyNow(bracelet)} className="btn-primary w-full">Buy Now</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            const PaymentConfirmationScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-white text-center">
+                    <button onClick={() => navigateTo('shop')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                    <h2 className="text-3xl font-bold text-green-800 mb-6">Confirm Your Purchase</h2>
+                    {selectedBracelet && (
+                        <div className="mb-6">
+                            <img src={selectedBracelet.image} alt={selectedBracelet.name} className="w-32 h-32 mx-auto mb-4 rounded-full" />
+                            <h3 className="text-2xl font-semibold text-gray-800">{selectedBracelet.name}</h3>
+                            <p className="text-xl font-bold text-green-700">{selectedBracelet.price}</p>
+                        </div>
+                    )}
+                    <p className="text-gray-600 mb-8">You're almost there! Confirm your payment to receive your Mediband code.</p>
+                    <button onClick={handlePaymentConfirm} className="btn-primary w-full">Confirm Payment</button>
+                </div>
+            );
+
+            const InfoScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-white">
+                    <button onClick={() => navigateTo('dashboard')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                    <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">About Mediband</h2>
+                    <div className="flex-grow overflow-y-auto pr-2 text-gray-700">
+                        <p className="mb-4">Mediband is dedicated to empowering you with real-time health insights. Our smart bracelets and intuitive app work together to help you monitor vital signs, track activity, and manage your well-being.</p>
+                        <p className="mb-4">We believe in proactive health management, providing you with the tools to make informed decisions about your lifestyle. From daily activity tracking to emergency access features, Mediband is your trusted partner in health.</p>
+                        <p className="mb-4">For support or more information, please visit our website or contact our customer service.</p>
+                        <p className="font-semibold">Version: 1.0.0</p>
+                    </div>
+                </div>
+            );
+
+            const ProfileScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-white">
+                    <button onClick={() => navigateTo('dashboard')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                    <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">Your Profile</h2>
+                    <div className="flex-grow overflow-y-auto pr-2 text-gray-700">
+                        <div className="flex items-center mb-6">
+                            <img src="https://i.imgur.com/DgTu0JB.png" alt="User Avatar" className="w-20 h-20 rounded-full mr-4" />
+                            <div>
+                                <p className="text-xl font-semibold">John Doe</p>
+                                <p className="text-gray-500">john.doe@example.com</p>
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800 mb-2">Personal Details</h3>
+                            <p><strong>Age:</strong> 30</p>
+                            <p><strong>Gender:</strong> Male</p>
+                            <p><strong>Height:</strong> 175 cm</p>
+                            <p><strong>Weight:</strong> 70 kg</p>
+                        </div>
+                        <div className="mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800 mb-2">Mediband Device</h3>
+                            <p><strong>Status:</strong> Connected</p>
+                            <p><strong>Model:</strong> Mediband Pro</p>
+                            <p><strong>Last Sync:</strong> Just now</p>
+                        </div>
+                        <button className="btn-primary w-full mt-4">Edit Profile</button>
+                        <button className="btn-secondary w-full mt-2">Log Out</button>
+                    </div>
+                </div>
+            );
+
+            const DesktopNav = ({ currentScreen, navigateTo }) => (
+                <div className="desktop-nav">
+                    <div className="flex items-center mb-8">
+                        <img src="https://i.imgur.com/DgTu0JB.png" alt="Mediband Logo" className="w-10 h-10 rounded-full mr-3" />
+                        <h3 className="text-xl font-semibold text-green-800">Mediband</h3>
+                    </div>
+                    <div className={`nav-item ${currentScreen === 'dashboard' ? 'active' : ''}`} onClick={() => navigateTo('dashboard')}> <i className="fas fa-home mr-2"></i> Home </div>
+                    <div className={`nav-item ${currentScreen === 'shop' ? 'active' : ''}`} onClick={() => navigateTo('shop')}> <i className="fas fa-shopping-cart mr-2"></i> Shop </div>
+                    <div className={`nav-item ${currentScreen === 'info' ? 'active' : ''}`} onClick={() => navigateTo('info')}> <i className="fas fa-info-circle mr-2"></i> Info </div>
+                    <div className={`nav-item ${currentScreen === 'profile' ? 'active' : ''}`} onClick={() => navigateTo('profile')}> <i className="fas fa-user mr-2"></i> Profile </div>
+                </div>
+            );
+
+            const BottomTabs = ({ currentScreen, navigateTo }) => (
+                <div className="flex justify-around bg-white border-t border-gray-200 p-2 shadow-lg bottom-tabs">
+                    <div className={`tab-item ${currentScreen === 'dashboard' ? 'active' : ''}`} onClick={() => navigateTo('dashboard')}> <i className="fas fa-home text-xl"></i><span className="text-xs mt-1">Home</span> </div>
+                    <div className={`tab-item ${currentScreen === 'shop' ? 'active' : ''}`} onClick={() => navigateTo('shop')}> <i className="fas fa-shopping-cart text-xl"></i><span className="text-xs mt-1">Shop</span> </div>
+                    <div className={`tab-item ${currentScreen === 'info' ? 'active' : ''}`} onClick={() => navigateTo('info')}> <i className="fas fa-info-circle text-xl"></i><span className="text-xs mt-1">Info</span> </div>
+                    <div className={`tab-item ${currentScreen === 'profile' ? 'active' : ''}`} onClick={() => navigateTo('profile')}> <i className="fas fa-user text-xl"></i><span className="text-xs mt-1">Profile</span> </div>
+                </div>
+            );
+
+            let CurrentScreenComponent;
+            switch (screen) {
+                case 'welcome': CurrentScreenComponent = WelcomeScreen; break;
+                case 'login': CurrentScreenComponent = LoginScreen; break;
+                case 'assignPersonalInfo': CurrentScreenComponent = AssignPersonalInfoScreen; break;
+                case 'activation': CurrentScreenComponent = ActivationScreen; break;
+                case 'dashboard': CurrentScreenComponent = DashboardScreen; break;
+                case 'emergency': CurrentScreenComponent = EmergencyAccessScreen; break;
+                case 'medicalFile': CurrentScreenComponent = MyMedicalFileScreen; break;
+                case 'shop': CurrentScreenComponent = ShopScreen; break;
+                case 'paymentConfirmation': CurrentScreenComponent = PaymentConfirmationScreen; break;
+                case 'info': CurrentScreenComponent = InfoScreen; break;
+                case 'profile': CurrentScreenComponent = ProfileScreen; break;
+                default: CurrentScreenComponent = WelcomeScreen; break;
+            }
+
+            return (
+                <div className="website-container">
+                    {screen !== 'welcome' && screen !== 'login' && screen !== 'assignPersonalInfo' && screen !== 'activation' && <DesktopNav currentScreen={screen} navigateTo={navigateTo} />}
+                    <div className="main-content flex-grow">
+                        <CurrentScreenComponent />
+                        {screen !== 'welcome' && screen !== 'login' && screen !== 'assignPersonalInfo' && screen !== 'activation' && <BottomTabs currentScreen={screen} navigateTo={navigateTo} />}
+                    </div>
+                </div>
+            );
+        };
+
+        try {
+            ReactDOM.render(<App />, document.getElementById('artifact_react'));
+        } catch(error) {
+            displayError('An error occurred while loading the application.');
+        }
+        window.addEventListener('error', function(event) {
+            displayError(event.message, event.error?.stack);
+        });
+        function displayError(message, stackInfo) {
+            const errorContainer = document.getElementById('error-container');
+            const errorMessage = document.createElement('div');
+            errorMessage.textContent = message;
+            errorContainer.appendChild(errorMessage);
+            if(stackInfo) {
+                const stackErrorMessage = document.createElement('pre');
+                stackErrorMessage.textContent = stackInfo.substring(0, 130);
+                errorContainer.appendChild(stackErrorMessage);
+            }
+            errorContainer.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
