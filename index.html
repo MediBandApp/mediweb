@@ -410,7 +410,7 @@
                         <div className="flex-grow overflow-y-auto p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                                 <button
-                                  onClick={openAddDataModal} // Open modal on Emergency Access click
+                                  onClick={() => navigateTo('emergency')}
                                   className="flex flex-col items-center justify-center p-4 bg-red-500 text-white rounded-xl shadow-lg transform transition duration-200 hover:scale-105"
                                 >
                                     <i className="fas fa-ambulance text-3xl mb-2"></i>
@@ -467,7 +467,24 @@
                 );
             };
 
-            // Removed EmergencyAccessScreen component and navigation
+            const EmergencyAccessScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-red-50">
+                    <button onClick={() => navigateTo('dashboard')} className="text-red-600 mb-4 underline self-start">Back to Dashboard</button>
+                    <h2 className="text-3xl font-bold text-red-700 mb-6 flex items-center gap-2">
+                        <i className="fas fa-exclamation-triangle"></i> Emergency Access
+                    </h2>
+                    <div className="bg-white rounded-xl p-6 shadow-md mb-6">
+                        <h3 className="text-xl font-semibold mb-4">Essential Data</h3>
+                        <p><strong>Name:</strong> John Doe</p>
+                        <p><strong>Blood Type:</strong> A+</p>
+                        <p><strong>Allergies:</strong> Penicillin, Peanuts</p>
+                        <p><strong>Chronic Diseases:</strong> Asthma</p>
+                        <p><strong>Emergency Contact:</strong> Jane Doe (555-123-4567)</p>
+                    </div>
+                    <button className="bg-blue-500 text-white rounded-xl py-3 mb-4 hover:bg-blue-600 transition">Call Emergency Contact</button>
+                    <button className="bg-red-600 text-white rounded-xl py-3 hover:bg-red-700 transition">Send Alert (Hospital/Doctor)</button>
+                </div>
+            );
 
             const MedicalTestsScreen = () => (
                 <div className="relative flex flex-col h-full p-8 bg-white">
@@ -703,7 +720,7 @@
                     <div className={`nav-item ${currentScreen === 'shop' ? 'active' : ''}`} onClick={() => navigateTo('shop')}> <i className="fas fa-shopping-cart mr-2"></i> Shop </div>
                     <div className={`nav-item ${currentScreen === 'info' ? 'active' : ''}`} onClick={() => navigateTo('info')}> <i className="fas fa-info-circle mr-2"></i> Info </div>
                     <div className={`nav-item ${currentScreen === 'profile' ? 'active' : ''}`} onClick={() => navigateTo('profile')}> <i className="fas fa-user mr-2"></i> Profile </div>
-                    {/* Removed Emergency from nav */}
+                    <div className={`nav-item ${currentScreen === 'emergency' ? 'active' : ''}`} onClick={() => navigateTo('emergency')}> <i className="fas fa-ambulance mr-2"></i> Emergency </div>
                     <div className={`nav-item ${currentScreen === 'medicalFile' || currentScreen === 'medicalTests' || currentScreen === 'prescriptions' || currentScreen === 'hospitalHistory' ? 'active' : ''}`} onClick={() => navigateTo('medicalFile')}> <i className="fas fa-file-medical mr-2"></i> Medical File </div>
                 </div>
             );
@@ -724,6 +741,7 @@
                 case 'assignPersonalInfo': CurrentScreenComponent = AssignPersonalInfoScreen; break;
                 case 'activation': CurrentScreenComponent = ActivationScreen; break;
                 case 'dashboard': CurrentScreenComponent = DashboardScreen; break;
+                case 'emergency': CurrentScreenComponent = EmergencyAccessScreen; break;
                 case 'medicalFile': CurrentScreenComponent = MyMedicalFileScreen; break;
                 case 'medicalTests': CurrentScreenComponent = MedicalTestsScreen; break;
                 case 'prescriptions': CurrentScreenComponent = PrescriptionsScreen; break;
