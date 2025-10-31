@@ -1,33 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mediband Website</title>
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/prop-types@15.7.2/prop-types.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15.7.2/umd/prop-types.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/recharts@2.5.0/umd/Recharts.min.js"></script>
     <script src="https://unpkg.com/@material-ui/core@4.12.4/umd/material-ui.development.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <style>
         body { margin: 0; font-family: Arial, sans-serif; background-color: #f0fdf4; }
         #artifact_react { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         .website-container { width: 100%; background-color: white; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: calc(100vh - 40px); }
-        @media (min-width: 768px) { /* Desktop styles */
+        @media (min-width: 768px) {
             .website-container { max-width: 1200px; margin: 0 auto; flex-direction: row; }
             .main-content { flex-grow: 1; display: flex; flex-direction: column; }
             .desktop-nav { display: flex; flex-direction: column; width: 200px; background-color: #d1fae5; padding: 20px; border-right: 1px solid #a7f3d0; }
             .desktop-nav .nav-item { padding: 10px 0; text-align: left; color: #065f46; font-weight: bold; border-radius: 0.5rem; margin-bottom: 10px; transition: background-color 0.2s; cursor: pointer; }
             .desktop-nav .nav-item:hover { background-color: #a7f3d0; }
             .desktop-nav .nav-item.active { background-color: #10b981; color: white; }
-            .bottom-tabs { display: none; } /* Hide bottom tabs on desktop */
+            .bottom-tabs { display: none; }
         }
-        @media (max-width: 767px) { /* Mobile styles */
+        @media (max-width: 767px) {
             .website-container { max-width: 400px; margin: 0 auto; }
-            .desktop-nav { display: none; } /* Hide desktop nav on mobile */
+            .desktop-nav { display: none; }
         }
         .gradient-bg { background: linear-gradient(to bottom right, #a7f3d0, #34d399); }
         .btn-primary { background-color: #10b981; color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: bold; transition: background-color 0.2s; }
@@ -52,18 +52,93 @@
             background-color: #ff96000d;
             display: none;
         }
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .step-indicator {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #10b981;
+            text-align: center;
+        }
+        .role-button {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #10b981;
+            background-color: white;
+            color: #10b981;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .role-button:hover {
+            background-color: #10b981;
+            color: white;
+        }
+        .submit-button {
+            background-color: #10b981;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+        .submit-button:hover {
+            background-color: #059669;
+        }
+        .dropdown {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #a7f3d0;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+        .input-label {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: block;
+            color: #065f46;
+        }
+        .file-input {
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
     <div id="artifact_react"></div>
     <div id="error-container"></div>
     <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
-        const { Button, TextField, Checkbox, FormControlLabel, Radio, RadioGroup, FormLabel } = MaterialUI;
+        const { useState } = React;
+        const Recharts = window.Recharts;
+        const MaterialUI = window.MaterialUI;
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts || {};
+        const { TextField, Checkbox, FormControlLabel } = MaterialUI || {};
 
         const App = () => {
-            const [screen, setScreen] = useState('welcome'); // welcome, assignPersonalInfo, shop, dashboard, info, profile, emergency, medicalFile, paymentConfirmation
+            const [screen, setScreen] = useState('welcome');
             const [personalInfo, setPersonalInfo] = useState({
                 cardId: '',
                 fullName: '',
@@ -77,8 +152,23 @@
             const [selectedBracelet, setSelectedBracelet] = useState(null);
             const [securityToggle, setSecurityToggle] = useState(false);
 
+            // Add to My Data modal states
+            const [showAddDataModal, setShowAddDataModal] = useState(false);
+            const [addDataStep, setAddDataStep] = useState(1);
+            const [role, setRole] = useState('');
+            const [infoType, setInfoType] = useState('');
+            const [formData, setFormData] = useState({});
+            const [file, setFile] = useState(null);
+
             const navigateTo = (targetScreen) => {
                 setScreen(targetScreen);
+                // Reset modal on navigation
+                setShowAddDataModal(false);
+                setAddDataStep(1);
+                setRole('');
+                setInfoType('');
+                setFormData({});
+                setFile(null);
             };
 
             const handlePersonalInfoChange = (e) => {
@@ -100,6 +190,139 @@
                 alert(`Payment confirmed for ${selectedBracelet.name}! Your Mediband code is MB-${Math.floor(Math.random() * 10000)}`);
                 navigateTo('dashboard');
             };
+
+            // Add to My Data modal handlers
+            const openAddDataModal = () => {
+                setShowAddDataModal(true);
+                setAddDataStep(1);
+                setRole('');
+                setInfoType('');
+                setFormData({});
+                setFile(null);
+            };
+
+            const handleRoleSelect = (selectedRole) => {
+                setRole(selectedRole);
+                setAddDataStep(2);
+                setFormData({});
+                setFile(null);
+            };
+
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleFileChange = (e) => {
+                setFile(e.target.files[0]);
+            };
+
+            const handleInfoTypeChange = (e) => {
+                setInfoType(e.target.value);
+                setFormData(prev => ({ ...prev, infoType: e.target.value }));
+            };
+
+            const handleAddDataSubmit = () => {
+                setAddDataStep(3);
+            };
+
+            const handleAddDataConfirm = () => {
+                alert(`Data added successfully as a ${role} with info type: ${infoType}`);
+                console.log('Submitted Data:', { role, formData, file });
+                setShowAddDataModal(false);
+                setAddDataStep(1);
+                setRole('');
+                setInfoType('');
+                setFormData({});
+                setFile(null);
+            };
+
+            const renderPatientForm = () => (
+                <>
+                    <label className="input-label" htmlFor="nationalId">National ID Number</label>
+                    <input type="text" id="nationalId" name="nationalId" className="input-field" value={formData.nationalId || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" className="input-field" value={formData.fullName || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="infoType">Type of Information to Add</label>
+                    <select id="infoType" name="infoType" className="dropdown" value={infoType} onChange={handleInfoTypeChange}>
+                        <option value="">-- Select --</option>
+                        <option value="Medical Test">Medical Test</option>
+                        <option value="Allergy">Allergy</option>
+                        <option value="Prescription">Prescription</option>
+                        <option value="Hospital Visit">Hospital Visit</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label className="input-label" htmlFor="description">Description</label>
+                    <input type="text" id="description" name="description" className="input-field" value={formData.description || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="details">Details</label>
+                    <textarea id="details" name="details" className="input-field" rows="4" value={formData.details || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="fileUpload">Upload File (optional)</label>
+                    <input type="file" id="fileUpload" name="fileUpload" className="file-input" onChange={handleFileChange} />
+
+                    <button className="submit-button" disabled={!formData.nationalId || !formData.fullName || !infoType || !formData.description || !formData.details} onClick={handleAddDataSubmit}>Submit Information</button>
+                    <button className="submit-button mt-4 bg-gray-400 hover:bg-gray-500" onClick={() => setAddDataStep(1)}>Back</button>
+                </>
+            );
+
+            const renderDoctorForm = () => (
+                <>
+                    <label className="input-label" htmlFor="doctorName">Doctor's Name</label>
+                    <input type="text" id="doctorName" name="doctorName" className="input-field" value={formData.doctorName || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="doctorId">Doctor ID / License Number</label>
+                    <input type="text" id="doctorId" name="doctorId" className="input-field" value={formData.doctorId || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="hospitalName">Hospital / Clinic Name</label>
+                    <input type="text" id="hospitalName" name="hospitalName" className="input-field" value={formData.hospitalName || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="patientNationalId">Patient National ID</label>
+                    <input type="text" id="patientNationalId" name="patientNationalId" className="input-field" value={formData.patientNationalId || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="infoType">Type of Information to Add</label>
+                    <select id="infoType" name="infoType" className="dropdown" value={infoType} onChange={handleInfoTypeChange}>
+                        <option value="">-- Select --</option>
+                        <option value="Medical Test">Medical Test</option>
+                        <option value="Allergy">Allergy</option>
+                        <option value="Prescription">Prescription</option>
+                        <option value="Hospital Visit">Hospital Visit</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label className="input-label" htmlFor="details">Details</label>
+                    <textarea id="details" name="details" className="input-field" rows="4" value={formData.details || ''} onChange={handleInputChange} />
+
+                    <label className="input-label" htmlFor="fileUpload">Upload File / Report (optional)</label>
+                    <input type="file" id="fileUpload" name="fileUpload" className="file-input" onChange={handleFileChange} />
+
+                    <button className="submit-button" disabled={!formData.doctorName || !formData.doctorId || !formData.hospitalName || !formData.patientNationalId || !infoType || !formData.details} onClick={handleAddDataSubmit}>Submit Update</button>
+                    <button className="submit-button mt-4 bg-gray-400 hover:bg-gray-500" onClick={() => setAddDataStep(1)}>Back</button>
+                </>
+            );
+
+            const renderConfirmStep = () => (
+                <>
+                    <div className="step-indicator">Step 3: Confirm Information</div>
+                    <div className="mb-4">
+                        <h3 className="font-semibold text-green-800 mb-2">Role:</h3>
+                        <p>{role}</p>
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="font-semibold text-green-800 mb-2">Information Details:</h3>
+                        <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded">{JSON.stringify(formData, null, 2)}</pre>
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="font-semibold text-green-800 mb-2">Uploaded File:</h3>
+                        <p>{file ? file.name : 'No file uploaded'}</p>
+                    </div>
+                    <button className="submit-button" onClick={handleAddDataConfirm}>Confirm</button>
+                    <button className="submit-button mt-4 bg-gray-400 hover:bg-gray-500" onClick={() => setAddDataStep(2)}>Back</button>
+                </>
+            );
 
             const WelcomeScreen = () => (
                 <div className="relative flex flex-col items-center justify-center h-full p-8 text-center gradient-bg">
@@ -130,14 +353,14 @@
                     <button onClick={() => navigateTo('welcome')} className="back-button"><i className="fas fa-arrow-left"></i></button>
                     <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Personal Information</h2>
                     <div className="flex-grow overflow-y-auto pr-2">
-                        <TextField label="Card ID" name="cardId" value={personalInfo.cardId} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
-                        <TextField label="Full Name" name="fullName" value={personalInfo.fullName} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
-                        <TextField label="Email" name="email" value={personalInfo.email} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
-                        <TextField label="Phone Number" name="phone" value={personalInfo.phone} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
-                        <TextField label="Address" name="address" value={personalInfo.address} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
-                        <TextField label="City" name="city" value={personalInfo.city} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
-                        <TextField label="Zip Code" name="zip" value={personalInfo.zip} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
-                        <TextField label="Country" name="country" value={personalInfo.country} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />
+                        {TextField && <TextField label="Card ID" name="cardId" value={personalInfo.cardId} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
+                        {TextField && <TextField label="Full Name" name="fullName" value={personalInfo.fullName} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
+                        {TextField && <TextField label="Email" name="email" value={personalInfo.email} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
+                        {TextField && <TextField label="Phone Number" name="phone" value={personalInfo.phone} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
+                        {TextField && <TextField label="Address" name="address" value={personalInfo.address} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
+                        {TextField && <TextField label="City" name="city" value={personalInfo.city} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
+                        {TextField && <TextField label="Zip Code" name="zip" value={personalInfo.zip} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
+                        {TextField && <TextField label="Country" name="country" value={personalInfo.country} onChange={handlePersonalInfoChange} fullWidth margin="normal" variant="outlined" />}
                     </div>
                     <button onClick={handlePersonalInfoSubmit} className="btn-primary w-full mt-6">Continue to Shop</button>
                 </div>
@@ -186,7 +409,10 @@
 
                         <div className="flex-grow overflow-y-auto p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                                <button onClick={() => navigateTo('emergency')} className="flex flex-col items-center justify-center p-4 bg-red-500 text-white rounded-xl shadow-lg transform transition duration-200 hover:scale-105">
+                                <button
+                                  onClick={openAddDataModal} // Open modal on Emergency Access click
+                                  className="flex flex-col items-center justify-center p-4 bg-red-500 text-white rounded-xl shadow-lg transform transition duration-200 hover:scale-105"
+                                >
                                     <i className="fas fa-ambulance text-3xl mb-2"></i>
                                     <span className="text-sm font-semibold">Emergency Access</span>
                                 </button>
@@ -196,10 +422,10 @@
                                 </button>
                                 <div className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between col-span-full md:col-span-1">
                                     <span className="text-lg font-semibold text-gray-800">Enhanced Security</span>
-                                    <FormControlLabel
+                                    {FormControlLabel && Checkbox && <FormControlLabel
                                         control={<Checkbox checked={securityToggle} onChange={(e) => setSecurityToggle(e.target.checked)} name="security" color="primary" />}
                                         label=""
-                                    />
+                                    />}
                                 </div>
                             </div>
 
@@ -223,52 +449,165 @@
 
                             <div className="bg-white p-4 rounded-xl shadow-sm mb-6">
                                 <h4 className="text-lg font-semibold text-gray-800 mb-3">Activity Trends</h4>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <LineChart data={data}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="name" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Line type="monotone" dataKey="HeartRate" stroke="#8884d8" />
-                                        <Line type="monotone" dataKey="Steps" stroke="#82ca9d" />
-                                    </LineChart>
-                                </ResponsiveContainer>
+                                {Recharts && LineChart && (
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <LineChart data={data}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="name" />
+                                            <YAxis />
+                                            <Tooltip />
+                                            <Line type="monotone" dataKey="HeartRate" stroke="#8884d8" />
+                                            <Line type="monotone" dataKey="Steps" stroke="#82ca9d" />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                )}
                             </div>
                         </div>
                     </div>
                 );
             };
 
-            const EmergencyAccessScreen = () => (
-                <div className="relative flex flex-col h-full p-8 bg-red-50 gradient-bg">
-                    <button onClick={() => navigateTo('dashboard')} className="back-button text-red-800"><i className="fas fa-arrow-left"></i></button>
-                    <h2 className="text-3xl font-bold text-red-800 mb-6 text-center">Emergency Access</h2>
-                    <p className="text-red-700 text-center mb-8">In case of emergency, quickly access vital information or alert contacts.</p>
-                    <div className="flex-grow flex flex-col justify-center items-center">
-                        <button className="btn-primary bg-red-600 hover:bg-red-700 w-full mb-4">Call Emergency Contacts</button>
-                        <button className="btn-secondary bg-red-200 text-red-800 hover:bg-red-300 w-full">View Emergency Info</button>
+            // Removed EmergencyAccessScreen component and navigation
+
+            const MedicalTestsScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-white">
+                    <button onClick={() => navigateTo('medicalFile')} className="back-button text-green-600">Back to Medical File</button>
+                    <div className="flex items-center mb-6">
+                        <i className="fas fa-vial text-green-600 text-3xl mr-3"></i>
+                        <h2 className="text-3xl font-bold text-gray-800">Medical Tests</h2>
+                    </div>
+                    <div className="flex-grow overflow-y-auto pr-2">
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">Blood Test</h3>
+                            <p className="text-gray-600">2023-10-20 - Dr. Smith</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">Diabetes Test</h3>
+                            <p className="text-gray-600">2023-09-10 - Dr. Jones</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">Cholesterol Test</h3>
+                            <p className="text-gray-600">2023-07-01 - Dr. Lee</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">X-Ray (Chest)</h3>
+                            <p className="text-gray-600">2023-08-15 - Dr. Brown</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">MRI (Knee)</h3>
+                            <p className="text-gray-600">2023-06-05 - Dr. White</p>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const PrescriptionsScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-white">
+                    <button onClick={() => navigateTo('medicalFile')} className="back-button text-green-600">Back to Medical File</button>
+                    <div className="flex items-center mb-6">
+                        <i className="fas fa-pills text-green-600 text-3xl mr-3"></i>
+                        <h2 className="text-3xl font-bold text-gray-800">Prescriptions</h2>
+                    </div>
+                    <div className="flex-grow overflow-y-auto pr-2">
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">Amoxicillin</h3>
+                            <p className="text-gray-600">500mg, 3 times a day</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">Lisinopril</h3>
+                            <p className="text-gray-600">10mg, Once a day</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">Ibuprofen</h3>
+                            <p className="text-gray-600">200mg, As needed</p>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const HospitalHistoryScreen = () => (
+                <div className="relative flex flex-col h-full p-8 bg-white">
+                    <button onClick={() => navigateTo('medicalFile')} className="back-button text-green-600">Back to Medical File</button>
+                    <div className="flex items-center mb-6">
+                        <i className="fas fa-hospital text-green-600 text-3xl mr-3"></i>
+                        <h2 className="text-3xl font-bold text-gray-800">Hospital History</h2>
+                    </div>
+                    <div className="flex-grow overflow-y-auto pr-2">
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">2023-10-22 - Dr. Smith (General Medicine)</h3>
+                            <p className="text-gray-600">Common Cold</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">2023-09-10 - Dr. Jones (Endocrinology)</h3>
+                            <p className="text-gray-600">Pre-diabetes</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-xl shadow-sm mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">2023-05-01 - Dr. Brown (Orthopedics)</h3>
+                            <p className="text-gray-600">Knee Pain</p>
+                        </div>
                     </div>
                 </div>
             );
 
             const MyMedicalFileScreen = () => (
-                <div className="relative flex flex-col h-full p-8 bg-blue-50 gradient-bg">
-                    <button onClick={() => navigateTo('dashboard')} className="back-button text-blue-800"><i className="fas fa-arrow-left"></i></button>
-                    <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">My Medical File</h2>
-                    <p className="text-blue-700 text-center mb-8">Securely store and access your medical records and history.</p>
-                    <div className="flex-grow flex flex-col justify-center items-center">
-                        <button className="btn-primary bg-blue-600 hover:bg-blue-700 w-full mb-4">View Records</button>
-                        <button className="btn-secondary bg-blue-200 text-blue-800 hover:bg-blue-300 w-full">Upload New Document</button>
+                <div className="relative flex flex-col h-full p-8 bg-white">
+                    <button onClick={() => navigateTo('dashboard')} className="back-button"><i className="fas fa-arrow-left"></i></button>
+                    <div className="flex items-center mb-6">
+                        <i className="fas fa-dna text-green-600 text-3xl mr-3"></i>
+                        <h2 className="text-3xl font-bold text-gray-800">My Medical File</h2>
                     </div>
+                    <input type="text" placeholder="Search tests, doctors, medicines..." className="input-field mb-6" />
+
+                    <div className="flex-grow overflow-y-auto pr-2">
+                        <button onClick={() => navigateTo('medicalTests')} className="w-full bg-gray-100 p-4 rounded-xl shadow-sm flex items-center mb-4 transition duration-200 hover:bg-gray-200">
+                            <i className="fas fa-vial text-blue-500 text-xl mr-3"></i>
+                            <span className="text-lg font-semibold text-gray-800">Medical Tests</span>
+                        </button>
+                        <button onClick={() => navigateTo('prescriptions')} className="w-full bg-gray-100 p-4 rounded-xl shadow-sm flex items-center mb-4 transition duration-200 hover:bg-gray-200">
+                            <i className="fas fa-pills text-red-500 text-xl mr-3"></i>
+                            <span className="text-lg font-semibold text-gray-800">Prescriptions</span>
+                        </button>
+                        <button onClick={() => navigateTo('hospitalHistory')} className="w-full bg-gray-100 p-4 rounded-xl shadow-sm flex items-center mb-6 transition duration-200 hover:bg-gray-200">
+                            <i className="fas fa-hospital text-purple-500 text-xl mr-3"></i>
+                            <span className="text-lg font-semibold text-gray-800">Hospital History</span>
+                        </button>
+                    </div>
+
+                    <button onClick={openAddDataModal} className="btn-primary bg-blue-500 hover:bg-blue-600 w-full mb-4">Add to My Data</button>
+                    <button className="btn-primary w-full">Download All Records</button>
+                    <p className="text-gray-500 text-sm text-center mt-4">Last Synced: 2025-10-24</p>
+
+                    {showAddDataModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                {addDataStep === 1 && (
+                                    <>
+                                        <div className="step-indicator">Step 1: Select Your Role</div>
+                                        <button className="role-button" onClick={() => handleRoleSelect('Patient')}>I'm a Patient</button>
+                                        <button className="role-button" onClick={() => handleRoleSelect('Doctor')}>I'm a Doctor</button>
+                                        <button className="submit-button mt-4" onClick={() => setShowAddDataModal(false)}>Cancel</button>
+                                    </>
+                                )}
+                                {addDataStep === 2 && (
+                                    <>
+                                        <div className="step-indicator">Step 2: Fill Information</div>
+                                        {role === 'Patient' && renderPatientForm()}
+                                        {role === 'Doctor' && renderDoctorForm()}
+                                    </>
+                                )}
+                                {addDataStep === 3 && renderConfirmStep()}
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
 
             const ShopScreen = () => {
                 const bracelets = [
-                    { id: 1, name: 'Mediband Basic', price: '$99', description: 'Essential health tracking.', image: 'https://i.imgur.com/lDvW5Q0.png' },
-                    { id: 2, name: 'Mediband Pro', price: '$199', description: 'Advanced monitoring & insights.', image: 'https://i.imgur.com/lDvW5Q0.png' },
-                    { id: 3, name: 'Mediband Elite', price: '$299', description: 'Premium features & support.', image: 'https://i.imgur.com/lDvW5Q0.png' },
-                    { id: 4, name: 'Mediband Sport', price: '$149', description: 'Durable for active lifestyles.', image: 'https://i.imgur.com/lDvW5Q0.png' },
+                    { id: 1, name: 'Green Mediband', price: '$29.99', description: 'Vibrant green for a fresh look.', image: 'https://i.imgur.com/lDvW5Q0.png' },
+                    { id: 2, name: 'Blue Mediband', price: '$29.99', description: 'Calm blue for everyday wear.', image: 'https://placehold.co/100x100/ADD8E6/0000FF?text=Blue' },
+                    { id: 3, name: 'Red Mediband', price: '$29.99', description: 'Bold red for a statement.', image: 'https://i.imgur.com/8R3nHfF.png' },
+                    { id: 4, name: 'Black Mediband', price: '$29.99', description: 'Classic black for any occasion.', image: 'https://i.imgur.com/A91HFC6.png' },
                 ];
 
                 return (
@@ -276,7 +615,7 @@
                         <button onClick={() => navigateTo('assignPersonalInfo')} className="back-button"><i className="fas fa-arrow-left"></i></button>
                         <div className="p-6 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-b-3xl shadow-md text-center">
                             <h2 className="text-3xl font-bold mb-2">Our Medibands</h2>
-                            <p className="text-sm opacity-90">Find the perfect health companion for you.</p>
+                            <p className="text-sm opacity-90">Choose your style, embrace your health.</p>
                         </div>
 
                         <div className="flex-grow overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -364,6 +703,8 @@
                     <div className={`nav-item ${currentScreen === 'shop' ? 'active' : ''}`} onClick={() => navigateTo('shop')}> <i className="fas fa-shopping-cart mr-2"></i> Shop </div>
                     <div className={`nav-item ${currentScreen === 'info' ? 'active' : ''}`} onClick={() => navigateTo('info')}> <i className="fas fa-info-circle mr-2"></i> Info </div>
                     <div className={`nav-item ${currentScreen === 'profile' ? 'active' : ''}`} onClick={() => navigateTo('profile')}> <i className="fas fa-user mr-2"></i> Profile </div>
+                    {/* Removed Emergency from nav */}
+                    <div className={`nav-item ${currentScreen === 'medicalFile' || currentScreen === 'medicalTests' || currentScreen === 'prescriptions' || currentScreen === 'hospitalHistory' ? 'active' : ''}`} onClick={() => navigateTo('medicalFile')}> <i className="fas fa-file-medical mr-2"></i> Medical File </div>
                 </div>
             );
 
@@ -383,8 +724,10 @@
                 case 'assignPersonalInfo': CurrentScreenComponent = AssignPersonalInfoScreen; break;
                 case 'activation': CurrentScreenComponent = ActivationScreen; break;
                 case 'dashboard': CurrentScreenComponent = DashboardScreen; break;
-                case 'emergency': CurrentScreenComponent = EmergencyAccessScreen; break;
                 case 'medicalFile': CurrentScreenComponent = MyMedicalFileScreen; break;
+                case 'medicalTests': CurrentScreenComponent = MedicalTestsScreen; break;
+                case 'prescriptions': CurrentScreenComponent = PrescriptionsScreen; break;
+                case 'hospitalHistory': CurrentScreenComponent = HospitalHistoryScreen; break;
                 case 'shop': CurrentScreenComponent = ShopScreen; break;
                 case 'paymentConfirmation': CurrentScreenComponent = PaymentConfirmationScreen; break;
                 case 'info': CurrentScreenComponent = InfoScreen; break;
@@ -392,13 +735,38 @@
                 default: CurrentScreenComponent = WelcomeScreen; break;
             }
 
+            const showNavAndTabs = screen !== 'welcome' && screen !== 'login' && screen !== 'assignPersonalInfo' && screen !== 'activation' && screen !== 'paymentConfirmation';
+
             return (
                 <div className="website-container">
-                    {screen !== 'welcome' && screen !== 'login' && screen !== 'assignPersonalInfo' && screen !== 'activation' && <DesktopNav currentScreen={screen} navigateTo={navigateTo} />}
+                    {showNavAndTabs && <DesktopNav currentScreen={screen} navigateTo={navigateTo} />}
                     <div className="main-content flex-grow">
                         <CurrentScreenComponent />
-                        {screen !== 'welcome' && screen !== 'login' && screen !== 'assignPersonalInfo' && screen !== 'activation' && <BottomTabs currentScreen={screen} navigateTo={navigateTo} />}
+                        {showNavAndTabs && <BottomTabs currentScreen={screen} navigateTo={navigateTo} />}
                     </div>
+                    {/* Add to My Data Modal */}
+                    {showAddDataModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                {addDataStep === 1 && (
+                                    <>
+                                        <div className="step-indicator">Step 1: Select Your Role</div>
+                                        <button className="role-button" onClick={() => handleRoleSelect('Patient')}>I'm a Patient</button>
+                                        <button className="role-button" onClick={() => handleRoleSelect('Doctor')}>I'm a Doctor</button>
+                                        <button className="submit-button mt-4" onClick={() => setShowAddDataModal(false)}>Cancel</button>
+                                    </>
+                                )}
+                                {addDataStep === 2 && (
+                                    <>
+                                        <div className="step-indicator">Step 2: Fill Information</div>
+                                        {role === 'Patient' && renderPatientForm()}
+                                        {role === 'Doctor' && renderDoctorForm()}
+                                    </>
+                                )}
+                                {addDataStep === 3 && renderConfirmStep()}
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
